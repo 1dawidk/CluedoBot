@@ -5,6 +5,7 @@ void UI::init() {
     initscr();
     playersNo=0;
     state= EnterPNO;
+    cluedoProgress= new CluedoProgress();
 }
 
 void UI::onLoop() {
@@ -24,6 +25,10 @@ void UI::onLoop() {
         printw("What was the question? (Character, Weapon, Place, Player)");
     } else if(state==EnterResponse){
         printw("Who showed something?");
+    } else if(state==Result){
+        int c, w, p;
+        cluedoProgress->getBestBet(&c, &w, &p);
+        printw("I bet %s killed with %s in %s [Press enter to continue...]", CluedoCard::characters[c].c_str(), CluedoCard::weapons[w].c_str(), CluedoCard::places[p].c_str());
     }
 
     move(35, 5);
@@ -32,35 +37,54 @@ void UI::onLoop() {
     getstr(inbuff);
     string input(inbuff);
 
-    if(state==EnterPNO){
-        playersNo= stoi(inbuff);
-        names= new string[playersNo];
-        state= EnterNames;
-    } else if(state==EnterNames){
-        //TODO: Split and get names
-        size_t lastPos=0;
-        size_t nextPos=0;
+    try {
+        if (state == EnterPNO) {
+            playersNo = stoi(inbuff);
+            names = new string[playersNo];
+            state = EnterNames;
+        } else if (state == EnterNames) {
+            size_t lastPos = 0;
+            size_t nextPos = 0;
 
-        for(int i=0; i<playersNo; i++){
-            nextPos= input.find(',', lastPos);
-            names[i]= input.substr(lastPos, nextPos-lastPos);
+            for (int i = 0; i < playersNo; i++) {
+                nextPos = input.find(',', lastPos);
+                names[i] = input.substr(lastPos, nextPos - lastPos);
+                cluedoProgress->addPlayer(i, names[i]);
 
-            lastPos= nextPos+2;
+                lastPos = nextPos + 2;
+            }
+
+            state = EnterKnownCards;
+        } else if (state == EnterKnownCards) {
+            if (input == "q") {
+                state = EnterQuestion;
+            } else {
+                string cardType;
+                string cardIdx;
+
+                size_t comapos = input.find(',');
+
+                cardType = input.substr(0, comapos);
+                cardIdx = input.substr(comapos + 2);
+
+                cluedoProgress->addEntry(0, stoi(cardType), stoi(cardIdx), CLUEDOENTRY_TYPE_SURE);
+            }
+        } else if (state == EnterQuestion) {
+            if(input == "resolve"){
+                state= Result;
+            } else if(input == "quit") {
+                state= Quit;
+            } else {
+                state = EnterResponse;
+            }
+        } else if (state == EnterResponse) {
+            //TODO: get response
+            state = EnterQuestion;
+        } else if (state == Result){
+            state = EnterQuestion;
         }
+    } catch (const std::exception& e){
 
-        state= EnterKnownCards;
-    } else if(state==EnterKnownCards){
-        if(input=="q"){
-            state= EnterQuestion;
-        } else {
-            //TODO: add known card
-        }
-    } else if(state==EnterQuestion){
-        //TODO: get command or question
-        state= EnterResponse;
-    } else if(state==EnterResponse){
-        //TODO: get response
-        state= EnterQuestion;
     }
 }
 
@@ -92,6 +116,22 @@ void UI::drawStdFrame() {
         for(int i=0; i<playersNo; i++){
             mvprintw(CLUEDOCARD_CHARACTERS_NO+CLUEDOCARD_WEAPONS_NO+CLUEDOCARD_PLACES_NO+7+i, 120,
                     "%d - %s", i, names[i].c_str());
+        }
+    }
+
+    //TODO: Show last 30 entries
+    if(playersNo>0){
+        int showEntriesNo=cluedoProgress->getEntriesNo();
+        int showFrom= 0;
+
+        if(showEntriesNo>30){
+            showFrom= showEntriesNo-30;
+            showEntriesNo=30;
+        }
+
+
+        for(int i=0; i<showEntriesNo; i++){
+            mvprintw(i+1, 1, cluedoProgress->getEntryString(showFrom+i, names).c_str());
         }
     }
 

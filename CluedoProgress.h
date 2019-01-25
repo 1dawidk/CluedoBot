@@ -3,7 +3,9 @@
 
 
 #include "CluedoEntry.h"
+#include "Player.h"
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -12,9 +14,17 @@ public:
     CluedoProgress();
     ~CluedoProgress();
 
+    void addPlayer(int idx, string &name);
     void addEntry(int player, int cardGroup, int cardIdx, int type);
+    void resolve();
+
+    int getEntriesNo();
+    string getEntryString(int idx, string *names);
+
+    void getBestBet(int *c, int *w, int *p);
 private:
     vector<CluedoEntry*> entries;
+    vector<Player*> players;
 };
 
 

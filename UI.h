@@ -3,6 +3,7 @@
 
 #include <ncurses.h>
 #include "CluedoCard.h"
+#include "CluedoProgress.h"
 
 class UI {
 public:
@@ -11,11 +12,11 @@ public:
     void end();
 
 private:
-    enum States {EnterPNO, EnterNames, EnterKnownCards, EnterQuestion, EnterResponse, Result};
+    enum States {EnterPNO, EnterNames, EnterKnownCards, EnterQuestion, EnterResponse, Result, Quit};
 
     void drawStdFrame();
 
-    CluedoCard *cluedoCard;
+    CluedoProgress *cluedoProgress;
     int playersNo;
     string *names;
     States state;
