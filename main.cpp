@@ -55,17 +55,16 @@
  * określenia prawdopodobieństw posiadania danych kart przez kolejnych graczy.
  *
  * Jeżeli np pytanie dotyczyło kart 1, 1, 4 i odpowiedział gracz 2 to twierdzimy że
- * z pewnym pstwem to że posiada jedną z tych kart jest prawdą natomiast dla pozostałych
+ * z pstwem 0.333 gracz 2 posiada jedną z tych kart jest prawdą natomiast dla pozostałych
  * graczy twierdzimy że z pewnym pstwem NIE posiadają jednej z kart.
  */
 
 int main() {
     UI ui;
-    char *run= new char(1);
 
     ui.init();
 
-    while(*run){
+    while(ui.getState()!=UI::Quit){
         ui.onLoop();
     }
 

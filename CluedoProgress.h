@@ -3,6 +3,7 @@
 
 
 #include "CluedoEntry.h"
+#include "CluedoCard.h"
 #include "Player.h"
 #include <vector>
 #include <string>
@@ -19,12 +20,20 @@ public:
     void resolve();
 
     int getEntriesNo();
-    string getEntryString(int idx, string *names);
+    void printEntry(int idx, string *names, int y, int x);
 
     void getBestBet(int *c, int *w, int *p);
+
+    double getCharacterP(int idx);
+    double getWeaponP(int idx);
+    double getPlaceP(int idx);
 private:
     vector<CluedoEntry*> entries;
     vector<Player*> players;
+
+    double charactersPs[CLUEDOCARD_C_NO];
+    double weaponsPs[CLUEDOCARD_W_NO];
+    double placesPs[CLUEDOCARD_P_NO];
 };
 
 

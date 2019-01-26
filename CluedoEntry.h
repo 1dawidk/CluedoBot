@@ -12,7 +12,15 @@ class CluedoEntry {
 public:
     CluedoEntry(int player, int cardGroup, int cardIndex, double p);
 
-    string toString(string *playerNames);
+    void print(string *playerNames, int y, int x);
+
+    int getPlayer() const;
+
+    int getCardGroup() const;
+
+    int getCardIndex() const;
+
+    double getP() const;
 
 private:
     int player;
