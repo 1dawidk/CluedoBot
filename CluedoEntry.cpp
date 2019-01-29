@@ -11,11 +11,12 @@ CluedoEntry::CluedoEntry(int player, int cardGroup, int cardIndex, double p){
 }
 
 void CluedoEntry::print(string *playerNames, int y, int x) {
-    string ret= playerNames[player]+": ";
-
     move(y, x);
     attron(COLOR_PAIR(1));
-    printw(playerNames[player].c_str());
+    if(player>=0)
+        printw(playerNames[player].c_str());
+    else
+        printw("Magic Box");
     attroff(COLOR_PAIR(1));
     printw(" has ");
 

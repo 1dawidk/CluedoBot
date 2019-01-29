@@ -57,11 +57,15 @@
  * Jeżeli np pytanie dotyczyło kart 1, 1, 4 i odpowiedział gracz 2 to twierdzimy że
  * z pstwem 0.333 gracz 2 posiada jedną z tych kart jest prawdą natomiast dla pozostałych
  * graczy twierdzimy że z pewnym pstwem NIE posiadają jednej z kart.
+ *
+ *
+ * Zakładamy że pierwszy gracz (index 0) to bot
  */
 
 int main() {
     UI ui;
 
+    srand(time(nullptr));
     ui.init();
 
     while(ui.getState()!=UI::Quit){

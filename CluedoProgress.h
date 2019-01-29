@@ -15,8 +15,9 @@ public:
     CluedoProgress();
     ~CluedoProgress();
 
-    void addPlayer(int idx, string &name);
-    void addEntry(int player, int cardGroup, int cardIdx, int type);
+    void addPlayer(int idx, string &name, int cardsInHandNo);
+    char addEntry(int player, int cardGroup, int cardIdx, int type);
+    char addAnswer(int player, int *cardGroups, int *cardIdxs);
     void resolve();
 
     int getEntriesNo();
@@ -24,16 +25,19 @@ public:
 
     void getBestBet(int *c, int *w, int *p);
 
-    double getCharacterP(int idx);
-    double getWeaponP(int idx);
-    double getPlaceP(int idx);
+
+    double getP(int group, int idx);
+
+    void removeLastEntry();
 private:
     vector<CluedoEntry*> entries;
     vector<Player*> players;
 
-    double charactersPs[CLUEDOCARD_C_NO];
-    double weaponsPs[CLUEDOCARD_W_NO];
-    double placesPs[CLUEDOCARD_P_NO];
+    int groupPsStartIdx[3];
+
+    double ps[CLUEDOCARD_C_NO+CLUEDOCARD_W_NO+CLUEDOCARD_P_NO];
+
+    char checkIfBotHaveIt(int cardGroup, int cardIdx);
 };
 
 
