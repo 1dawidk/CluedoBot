@@ -1,5 +1,4 @@
 #include "Player.h"
-#include "DSSentence.h"
 
 
 Player::Player(int idx, string &name, int cardsInHandNo) {
@@ -15,7 +14,6 @@ Player::Player(int idx, string &name, int cardsInHandNo) {
 
 void Player::update(vector<CluedoEntry *> *entries) {
     double q=0;
-    vector<DSSentence*> dsSenteces;
     int posNo;
     double posSen[entries->size()];
     int negNo;

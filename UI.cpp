@@ -76,7 +76,7 @@ void UI::onLoop() {
         mvprintw(34, 1, "( type [0-character, 1-weapon, 2-place], index OR \"q\" )");
     } else if(state==EnterQuestion){
         printw("What was the question?");
-        mvprintw(34, 1, "( character, weapon, place OR \"quit\" OR \"remove_last\" )");
+        mvprintw(34, 1, "( character, weapon, place, player OR \"quit\" OR \"remove_last\" )");
     } else if(state==EnterResponse){
         printw("Who showed something? ");
 
@@ -96,7 +96,7 @@ void UI::onLoop() {
         attroff(COLOR_PAIR(2));
 
         printw(" )");
-        mvprintw(34, 1, "( index, name OR \"noone\" )");
+        mvprintw(34, 1, "( index, [group] OR \"noone\" )");
     } else if(state==Result){
         int c, w, p;
         cluedoProgress->getBestBet(&c, &w, &p);
@@ -167,11 +167,13 @@ void UI::onLoop() {
                 //Get cards idxs user asked for
                 size_t firstComa= input.find(',');
                 size_t secondComa= input.find(',', firstComa+1);
+                size_t thirdComa= input.find(',', secondComa+1);
 
-                if(firstComa!=string::npos && secondComa!=string::npos) {
+                if(firstComa!=string::npos && secondComa!=string::npos && thirdComa!=string::npos) {
                     qc = stoi(input.substr(0, firstComa));
                     qw = stoi(input.substr(firstComa + 1, firstComa - secondComa - 1));
-                    qp = stoi(input.substr(secondComa + 1));
+                    qp = stoi(input.substr(secondComa + 1, secondComa-thirdComa-1));
+                    qplayer= stoi(input.substr(thirdComa+1));
                     state = EnterResponse;
                 } else {
                     lastError= "To few arguments :(";
@@ -179,32 +181,30 @@ void UI::onLoop() {
             }
         } else if (state == EnterResponse) {
             int myQuestion=0;
-            int g=0;
             //Get question response
             if(input=="noone"){
-                aplayer=-1;
+                if(qplayer!=0){
+                    aplayer = qplayer;
+                } else {
+                    aplayer = -1;
+                }
                 state= EnterQuestion;
             } else {
                 if(input!="0") {
-                    if (input.length() > 1) {
-                        aplayer= stoi(input.substr(0, 1));
-                        myQuestion= 1;
-                        g= stoi(input.substr(2, 1));
+                    aplayer = stoi(input);
+                    if (aplayer < playersNo) {
+                        state = EnterQuestion;
                     } else {
-                        aplayer = stoi(input);
-                        if (aplayer < playersNo) {
-                            state = EnterQuestion;
-                        } else {
-                            lastError = "Player index must be >= 0";
-                            state = EnterResponse;
-                        }
+                        lastError = "Player index must be >= 0";
+                        state = EnterResponse;
                     }
                 }
             }
 
             //If all went ok
             if(state==EnterQuestion) {
-                if(myQuestion){
+                if(aplayer==qplayer && qplayer!=0){
+                    //TODO: Od teraz magic box też może mieć entries o pstwie < 1 (gracz n : n>0 zadal pytanie i nikt nie odpowiedzial)
 
                 } else {
                     char r;

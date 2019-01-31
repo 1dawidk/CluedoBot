@@ -36,6 +36,7 @@ private:
     int qc;
     int qw;
     int qp;
+    int qplayer;
 
     const static string logo_l1;
     const static string logo_l2;

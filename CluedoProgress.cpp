@@ -72,66 +72,90 @@ char CluedoProgress::addAnswer(int player, int *cardGroups, int *cardIdxs) {
 }
 
 void CluedoProgress::resolve() {
-    /**
-     * Find probability for each card players has it
-     */
-    for(int i=1; i<players.size(); i++){
-        players[i]->update(&entries);
-    }
+    double q=0;
+    int posNo;
+    double posSen[entries.size()];
+    int negNo;
+    double negSen[entries.size()];
 
-    /**
-     * Now assume each player says it has specific card with probability [p] computed
-     * in previous step. So it say magic box does not have it with probability [p']
-     * equal to 1-p
-     */
+    double pmCandD;
+    double pmCminusD;
+    double pmDminusC;
+    double pmA=0;
 
-    int boxCardsNo=0;
-    int boxCards[10];
+    double nmCandD;
+    double nmCminusD;
+    double nmDminusC;
+    double nmA=0;
 
-    double mBandC;
-    double mBminusC;
-    double mCminusB;
-    double mA=0;
+    double factorK;
+    double npmC;
 
-    for(int i=0; i<entries.size(); i++){
-        if(entries[i]->getPlayer()==-1){
-            boxCards[boxCardsNo]= groupPsStartIdx[entries[i]->getCardGroup()]+entries[i]->getCardIndex();
-            boxCardsNo++;
-        }
-    }
 
+    //Loop over groups
     for(int g=0; g<3; g++){
+        //Loop over group indexes
         for(int i=0; i<CluedoCard::cardsInGroup[g]; i++){
-            if(checkIfBotHaveIt(g, i)){
-                ps[groupPsStartIdx[g]+i]=0;
-            } else {
-                int isForSure=0;
+            posNo=0;
+            negNo=0;
 
-                //Check if we already now that it is in box
-                for(int j=0; j<boxCardsNo; j++){
-                    if(boxCards[j]==groupPsStartIdx[g]+i){
-                        isForSure=1;
-                        break;
+            // Loop over entries to find those refers to current card group [g] and index [i]
+            for(int e=0; e<entries.size(); e++){
+                if(entries[e]->getCardGroup()==g && entries[e]->getCardIndex()==i) {
+                    if (entries[e]->getPlayer() == -1) {
+                        negSen[negNo] = entries[e]->getP();
+                        negNo++;
+                    } else {
+                        posSen[posNo] = entries[e]->getP();
+                        posNo++;
                     }
                 }
+            }
 
-                if(isForSure){
-                    ps[groupPsStartIdx[g]+i]=1;
-                } else {
-                    mA= players[1]->getP(g, i);
-                    for(int p=2; p<players.size(); p++){
-                        mBandC = mA * players[p]->getP(g, i);
-                        mBminusC = mA * (1.0 - players[p]->getP(g, i));
-                        mCminusB = players[p]->getP(g, i) * (1.0 - mA);
 
-                        mA = mBandC + mBminusC + mCminusB;
-                    }
+            if(posNo>0) {
+                // Sum up positive sentences
+                pmA = posSen[0];
+                for (int s = 1; s < posNo; s++) {
+                    pmCandD = pmA * posSen[s];
+                    pmCminusD = pmA * (1.0 - posSen[s]);
+                    pmDminusC = posSen[s] * (1.0 - pmA);
 
-                    ps[groupPsStartIdx[g]+i]= 1.0-mA;
+                    pmA = pmCandD + pmCminusD + pmDminusC;
                 }
+            }
+
+            if(negNo>0){
+
+                // Sum up negative sentences
+                nmA= negSen[0];
+                for(int s=1; s<negNo; s++){
+                    nmCandD= nmA*negSen[s];
+                    nmCminusD= nmA*(1.0-negSen[s]);
+                    nmDminusC= negSen[s]*(1.0-nmA);
+
+                    nmA= nmCandD+nmCminusD+nmDminusC;
+                }
+            }
+
+            if(posNo>0 && negNo>0){
+                // Conflict
+                factorK= 1.0 / (1.0-(pmA*nmA));
+
+                npmC= factorK*pmA*(1.0-nmA);
+                ps[groupPsStartIdx[g]+i]=1-npmC;
+            } else if(posNo>0){
+                ps[groupPsStartIdx[g]+i]=1-pmA;
+            } else if(negNo>0){
+                ps[groupPsStartIdx[g]+i]=1-nmA;
             }
         }
     }
+
+    //TODO: Uwzględnić że wiem co mi ktos pokazał
+    //TODO: Naprawić że ja coś pokazałem i wtedy nic się nie dzieje
+
+    // Na górze nowa metoda liczenia (zakladamy ze magic box moze miec karty z pstwem < 1
 }
 
 int CluedoProgress::getEntriesNo() {
